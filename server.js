@@ -16,7 +16,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 dotenv.config({ path: './config/config.env' });
 
-//Must be after dotEnv config because it is using it.
+// connect to Mongo Database
 connectDB();
 
 // Route files
@@ -30,6 +30,7 @@ const app = express();
 
 // Parse JSON
 app.use(express.json());
+
 // use cookie parser
 app.use(cookieParser());
 

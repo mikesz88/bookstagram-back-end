@@ -1,4 +1,4 @@
-const filteredResults = (model) => async (request, response, next) => { // curry function shorthand passing in another function with parameters
+const filteredResults = (model) => async (request, response, next) => {
   let query;
   const reqQuery = { ...request.query };
   const removeFields = ['select', 'sort', 'page', 'limit'];
@@ -18,7 +18,7 @@ const filteredResults = (model) => async (request, response, next) => { // curry
   if (request.query.sort) {
     const sortBy = request.query.sort.split(',').join(' ');
     query = query.sort(sortBy)
-  } else { // fallback sort to place latest entry first
+  } else {
     query.sort('-createdAt');
   }
 

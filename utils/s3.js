@@ -1,6 +1,5 @@
 const dotenv = require('dotenv');
 const aws = require('aws-sdk');
-// import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 const {deleteObjectCommand} = require('aws-sdk');
 const crypto = require('crypto');
 const { promisify } = require('util');
@@ -44,34 +43,12 @@ exports.deleteObject = function(key) {
   })
 
   s3.deleteObject(params, function(err, data) {
-  if (err) {  // an error occurred
-    console.log(err, err.stack)
-  } else { // successful response
-    console.log(data)
-  };
-  // const data = await s3.send(new deleteObjectCommand(params));
-  // console.log("Success. Object deleted.");
+    if (err) { 
+      console.log(err, err.stack)
+    } else {
+      console.log(data)
+    };
   })
+
   return 'Photo has been deleted';
-
 }
-// async function deleteObject(key) {
-  
-// }
-
-// async function generateUploadURL() {
-  
-//   const rawBytes = await randomBytes(16);
-//   const imageName = rawBytes.toString('hex');
-
-//   const params = ({
-//     Bucket: bucket,
-//     Key: imageName,
-//     Expires: 60
-//   })
-
-//   const uploadURL = await s3.getSignedUrlPromise('putObject', params);
-
-//   return [imageName, uploadURL]
-// }
-
