@@ -1,54 +1,53 @@
 const dotenv = require('dotenv');
 const aws = require('aws-sdk');
-const {deleteObjectCommand} = require('aws-sdk');
 const crypto = require('crypto');
 const { promisify } = require('util');
 
 const randomBytes = promisify(crypto.randomBytes);
 
-dotenv.config()
+dotenv.config();
 
-const region = "us-east-1";
-const bucket = "bookstagram";
+const region = 'us-east-1';
+const bucket = 'bookstagram';
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
 const s3 = new aws.S3({
-  region, 
+  region,
   accessKeyId,
   secretAccessKey,
-  signatureVersion: 'v4'
+  signatureVersion: 'v4',
 });
 
-exports.generateUploadURL = async function() {
+exports.generateUploadURL = async function () {
   const rawBytes = await randomBytes(16);
   const imageName = rawBytes.toString('hex');
 
-  const params = ({
+  const params = {
     Bucket: bucket,
     Key: imageName,
-    Expires: 60
-  })
+    Expires: 60,
+  };
 
   const uploadURL = await s3.getSignedUrlPromise('putObject', params);
 
-  return [imageName, uploadURL]
-}
+  console.log('test', [imageName, uploadURL]);
+  return [imageName, uploadURL];
+};
 
-exports.deleteObject = function(key) {
-
-  const params = ({
+exports.deleteObject = function (key) {
+  const params = {
     Bucket: bucket,
-    Key: key
-  })
+    Key: key,
+  };
 
-  s3.deleteObject(params, function(err, data) {
-    if (err) { 
-      console.log(err, err.stack)
+  s3.deleteObject(params, function (err, data) {
+    if (err) {
+      console.log(err, err.stack);
     } else {
-      console.log(data)
-    };
-  })
+      console.log(data);
+    }
+  });
 
   return 'Photo has been deleted';
-}
+};
