@@ -17,8 +17,9 @@ exports.getSignedJwt = (email) =>
   });
 
 // to be used for password and forgot password comparison
-exports.matchSaltedValue = async (value, saltedValue) =>
-  await bcrypt.compare(value, saltedValue);
+exports.matchSaltedValue = async (value, saltedValue) => {
+  return await bcrypt.compare(value, saltedValue);
+};
 
 // also returning reset password token and expiration.
 exports.getResetPasswordToken = () => {

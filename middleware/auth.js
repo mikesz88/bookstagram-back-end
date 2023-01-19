@@ -1,6 +1,9 @@
+const { PrismaClient } = require('@prisma/client');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const jwt = require('jsonwebtoken');
+
+const prisma = new PrismaClient();
 
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;
@@ -18,8 +21,9 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded);
-    req.user = await User.findById(decoded.id);
+    req.user = await prisma.user.findUnique({
+      where: { email: decoded.email },
+    });
     next();
   } catch (err) {
     return next(new ErrorResponse('Not authorized to access this route', 401));
