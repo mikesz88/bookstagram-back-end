@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
-const connectDB = require('./config/db');
 const errorHandler = require('./middleware/error');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
@@ -11,19 +10,19 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 // Using environment files
-const path = require('path');
+// const path = require('path');
+
 // cookie parser
 const cookieParser = require('cookie-parser');
-dotenv.config({ path: './config/config.env' });
-
-// connect to Mongo Database
-connectDB();
+dotenv.config({ path: '.env' });
 
 // Route files
+// const books = require('./routes-v1/books');
+// const auth = require('./routes-v1/auth');
+// const users = require('./routes-v1/users');
 const books = require('./routes/books');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
-
 
 // Back-End Framework
 const app = express();
@@ -35,8 +34,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'))
-};
+  app.use(morgan('dev'));
+}
 
 app.use(mongoSanitize());
 app.use(helmet());
@@ -52,10 +51,9 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Mount books
-app.use('/api/v1/books', books);
-app.use('/api/v1/auth', auth);
-app.use('/api/v1/users', users);
-
+app.use('/api/v2/books', books);
+app.use('/api/v2/auth', auth);
+app.use('/api/v2/users', users);
 
 // error handling has to come after the mounting
 app.use(errorHandler);
@@ -66,10 +64,12 @@ const PORT = process.env.PORT || 5000;
 // Making the Back-End Live
 const server = app.listen(
   PORT,
-  console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`)
-)
+  console.log(
+    `Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`
+  )
+);
 
 process.on('unhandledRejection', (err) => {
   console.log(`Error: ${err.message}`);
   server.close(() => process.exit(1));
-})
+});
