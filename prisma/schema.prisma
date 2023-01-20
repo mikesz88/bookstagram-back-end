@@ -16,47 +16,54 @@ enum Role {
 }
 
 model User {
-  id             Int             @id @default(autoincrement())
+  id             String          @id @default(uuid())
   firstName      String
   lastName       String
   email          String          @unique
   role           Role            @default(USER)
   password       Password?
   forgotPassword ForgotPassword?
-  resetPassword  ResetPassword?
+  resetPassword  ResetPassword[]
   books          Book[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 }
 
 model Book {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   title     String   @unique @db.VarChar(50)
   photoUrl  String   @unique
   s3Key     String   @unique
   slug      String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId    Int
+  userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Password {
-  hash   String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId Int    @unique
+  id        String   @id @default(uuid())
+  hash      String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ForgotPassword {
+  id                     String   @id @default(uuid())
   forgotPasswordQuestion String
   forgotPasswordAnswer   String
-  user                   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId                 Int    @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId                 String   @unique
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model ResetPassword {
-  resetPasswordToken   String?
-  resetPasswordExpired DateTime?
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId               Int       @unique
+  id                   String   @id @default(uuid())
+  resetPasswordToken   String   @unique
+  resetPasswordExpired DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId               String
 }

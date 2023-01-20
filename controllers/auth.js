@@ -49,7 +49,7 @@ exports.register = asyncHandler(async (req, res, next) => {
     },
   });
 
-  sendTokenResponse(email, 201, res);
+  sendTokenResponse(user.id, 201, res);
 });
 
 // @desc Login user
@@ -85,7 +85,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Invalid credentials', 401));
   }
 
-  sendTokenResponse(user.email, 200, res);
+  sendTokenResponse(user.id, 200, res);
 });
 
 // @desc Logout user
@@ -108,7 +108,7 @@ exports.logout = asyncHandler(async (req, res, next) => {
 // @access PRIVATE
 exports.getLoggedInUser = asyncHandler(async (req, res, next) => {
   const user = await prisma.user.findUnique({
-    where: { email: req.user.email },
+    where: { id: req.user.id },
   });
 
   res.status(200).json({
@@ -121,7 +121,7 @@ exports.getLoggedInUser = asyncHandler(async (req, res, next) => {
 // @route GET /api/v2/auth/findusername/:id
 // @access PRIVATE
 exports.findUserName = asyncHandler(async (req, res, next) => {
-  const user = await prisma.user.findUnique({ where: { id: +req.params.id } });
+  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
 
   if (!user) {
     return next(new ErrorResponse('Invalid User Id'), 401);
@@ -156,14 +156,14 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
   //This was changed from showing new data to token
   // because token is tied to jwt
   // fix react on this
-  sendTokenResponse(user.email, 200, res);
+  sendTokenResponse(user.id, 200, res);
 });
 
 // @desc Update User password
 // @route POST /api/v2/auth/updatepassword
 // @access PRIVATE
 exports.updatePassword = asyncHandler(async (req, res, next) => {
-  const user = await prisma.user.findUnique({ where: { id: +req.user.id } });
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
   const userPassword = await prisma.password.findUnique({
     where: { userId: req.user.id },
@@ -187,17 +187,17 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
     },
   });
 
-  sendTokenResponse(user.email, 200, res);
+  sendTokenResponse(user.id, 200, res);
 });
 
 // @desc Update Forgot Question & Answer
 // @route PUT /api/v2/auth/updateforgot
 // @access PRIVATE
 exports.updateForgotQuestionAnswer = asyncHandler(async (req, res, next) => {
-  const user = await prisma.user.findUnique({ where: { id: +req.user.id } });
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
   const forgotPassword = await prisma.forgotPassword.findUnique({
-    where: { userId: +req.user.id },
+    where: { userId: req.user.id },
   });
 
   const isMatched = await matchSaltedValue(
@@ -221,7 +221,7 @@ exports.updateForgotQuestionAnswer = asyncHandler(async (req, res, next) => {
     },
   });
 
-  sendTokenResponse(user.email, 200, res);
+  sendTokenResponse(user.id, 200, res);
 });
 
 // @desc Forgot Question
@@ -271,14 +271,12 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Invalid credentials', 401));
   }
 
-  const resetValues = getResetPasswordToken();
+  const { resetPasswordToken, resetToken } = getResetPasswordToken();
 
-  // ! I need to figure out the expired issue here
-  await prisma.resetPassword.update({
-    where: { userId: user.id },
+  await prisma.resetPassword.create({
     data: {
-      resetPasswordToken: resetValues.resetPasswordToken,
-      resetPasswordExpired: prisma,
+      resetPasswordToken,
+      userId: user.id,
     },
   });
 
@@ -288,8 +286,56 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   });
 });
 
-const sendTokenResponse = (email, statusCode, res) => {
-  const token = getSignedJwt(email);
+// @desc reset password
+// @route PUT /api/v2/auth/resetpassword/:resettoken
+// @access PUBLIC
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.resettoken)
+    .digest('hex');
+
+  const resetUser = await prisma.resetPassword.findUnique({
+    where: { resetPasswordToken },
+  });
+  const actualResetDate =
+    new Date(resetUser.resetPasswordExpired).getTime() + 10 * 60 * 1000;
+  const isBeforeTimeLimit = actualResetDate > Date.now();
+
+  if (!isBeforeTimeLimit) {
+    return next(new ErrorResponse('Invalid or Expired token.', 400));
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: resetUser.userId },
+  });
+
+  await prisma.password.update({
+    where: { userId: resetUser.userId },
+    data: {
+      hash: await saltValue(req.body.password),
+    },
+  });
+
+  await prisma.resetPassword.delete({ where: { resetPasswordToken } });
+
+  sendTokenResponse(user.id, 200, res);
+});
+
+// @desc Delete my own account
+// @route PUT /api/v2/auth/deleteself
+// @access PRIVATE
+exports.deleteSelf = asyncHandler(async (req, res, next) => {
+  await prisma.user.delete({ where: { id: req.user.id } });
+
+  res.status(200).json({
+    success: true,
+    message: 'Your account has been officially deleted.',
+  });
+});
+
+const sendTokenResponse = (id, statusCode, res) => {
+  const token = getSignedJwt(id);
 
   const options = {
     expires: new Date(

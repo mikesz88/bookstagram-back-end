@@ -22,7 +22,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await prisma.user.findUnique({
-      where: { email: decoded.email },
+      where: { id: decoded.id },
     });
     next();
   } catch (err) {

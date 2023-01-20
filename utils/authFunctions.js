@@ -11,8 +11,8 @@ exports.saltValue = async (value) => {
 
 // Sign JWT and return
 // changed from id to email bc it is unique
-exports.getSignedJwt = (email) =>
-  jwt.sign({ email }, process.env.JWT_SECRET, {
+exports.getSignedJwt = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 
@@ -30,7 +30,7 @@ exports.getResetPasswordToken = () => {
     .update(resetToken)
     .digest('hex');
 
-  const resetPasswordExpired = Date.now() + 10 * 60 * 1000;
+  // const resetPasswordExpired = Date.now() + 10 * 60 * 1000;
 
-  return { resetPasswordToken, resetPasswordExpired, resetToken };
+  return { resetPasswordToken, resetToken };
 };

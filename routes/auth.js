@@ -27,7 +27,7 @@ router.put('/updatepassword', protect, updatePassword);
 router.put('/updateforgot', protect, updateForgotQuestionAnswer);
 router.put('/forgotquestion', forgetQuestion);
 router.post('/forgotpassword', forgotPassword);
-// router.put('/resetpassword/:resettoken', resetPassword);
-// router.delete('/deleteself/:id', /* protect, */ deleteSelf);
+router.put('/resetpassword/:resettoken', resetPassword);
+router.delete('/deleteself', protect, deleteSelf);
 
 module.exports = router;
