@@ -2,6 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const { generateUploadURL, deleteObject } = require('../utils/s3');
+const filteredResults = require('../middleware/prismaQueries');
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,10 @@ const prisma = new PrismaClient();
 // @route GET /api/v2/books
 // @access PUBLIC
 exports.getBooks = asyncHandler(async (req, res, next) => {
-  const books = await prisma.book.findMany({});
-
-  res.status(200).json(books);
+  const test = await filteredResults('book', req);
+  console.log(test);
+  res.status(200).json({
+    success: true,
+    data: test,
+  });
 });
