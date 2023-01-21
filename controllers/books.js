@@ -10,10 +10,18 @@ const prisma = new PrismaClient();
 // @route GET /api/v2/books
 // @access PUBLIC
 exports.getBooks = asyncHandler(async (req, res, next) => {
-  const test = await filteredResults('book', req);
-  console.log(test);
+  const filter = await filteredResults(req);
+  console.log(filter);
+  console.log({ where: filter.where });
+  const total = await prisma.book.count({ where: filter.where });
+  const books = await prisma.book.findMany(filter);
+  console.log(books);
+  console.log(total);
+  // * Create data to test total and filter
+  // * Finish pagination and create response appropriately
+
   res.status(200).json({
     success: true,
-    data: test,
+    data: books,
   });
 });

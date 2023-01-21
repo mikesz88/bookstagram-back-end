@@ -1,10 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
-const filteredResults = async (model, req) => {
-  let query;
+const filteredResults = async (req) => {
   const reqQuery = { ...req.query };
-  console.log(reqQuery);
   const filteredQuery = Object.keys(reqQuery).reduce((acc, cur) => {
     let prismaFormatted = {};
     prismaFormatted['take'] = acc['take'] ? acc['take'] : 25;
