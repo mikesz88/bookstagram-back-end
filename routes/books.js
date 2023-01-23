@@ -1,5 +1,4 @@
 const router = require('express').Router();
-// const filteredResults = require('../middleware/filteredResults');
 
 const {
   getBooks,
@@ -11,29 +10,23 @@ const {
   deleteS3Image,
 } = require('../controllers/books');
 
-// const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
-router.get('/', getBooks);
-// router.post('/', /* protect, */ /* authorize('admin', 'user'), */ createBook);
+router.route('/').get(getBooks).post(protect, createBook);
 
-// router.get('/:id', getBook);
-// router.put('/:id', /* protect, */ /* authorize('admin', 'user'), */ updateBook);
-// router.delete(
-//   '/:id',
-//   /* protect, */ /* authorize('admin', 'user'), */ deleteBook
-// );
+router
+  .route('/:id')
+  .get(getBook)
+  .put(protect, authorize('ADMIN', 'USER'), updateBook)
+  .delete(protect, authorize('ADMIN', 'USER'), deleteBook);
 
-// router.get(
-//   '/get/s3url',
-//   /* protect, */ /* authorize('admin', 'user'), */
-//   createS3Url
-// );
+router.get('/get/s3url', protect, authorize('ADMIN', 'USER'), createS3Url);
 
-// router.delete(
-//   '/deletes3image/:key',
-//   protect,
-//   /* authorize('admin', 'user'), */
-//   deleteS3Image
-// );
+router.delete(
+  '/deletes3image/:key',
+  protect,
+  authorize('ADMIN', 'USER'),
+  deleteS3Image
+);
 
 module.exports = router;

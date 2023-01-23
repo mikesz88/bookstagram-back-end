@@ -1,6 +1,11 @@
-const filteredResults = async (req) => {
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+const prismaQueries = async (req, model) => {
   const reqQuery = { ...req.query };
-  const filteredQuery = Object.keys(reqQuery).reduce((acc, cur) => {
+  reqQuery['limit'] = reqQuery['limit'] ? reqQuery['limit'] : 25;
+  reqQuery['page'] = reqQuery['page'] ? reqQuery['page'] : 0;
+  const filter = Object.keys(reqQuery).reduce((acc, cur) => {
     let prismaFormatted = {};
     prismaFormatted['take'] = acc['take'] ? acc['take'] : 25;
     prismaFormatted['skip'] = acc['skip'] ? acc['skip'] : 0;
@@ -8,8 +13,12 @@ const filteredResults = async (req) => {
       prismaFormatted['take'] = +reqQuery[cur];
     }
     if (cur === 'page') {
-      prismaFormatted['skip'] =
-        (+reqQuery[cur] - 1) * +(prismaFormatted['limit'] || 25);
+      if (+reqQuery[cur] < 1) {
+        prismaFormatted['skip'] = acc['skip'] ? acc['skip'] : 0;
+      } else {
+        prismaFormatted['skip'] =
+          (+reqQuery[cur] - 1) * +(prismaFormatted['take'] || 25);
+      }
     }
     if (cur === 'select') {
       const selectBy = reqQuery[cur].split(',').reduce((original, current) => {
@@ -30,26 +39,31 @@ const filteredResults = async (req) => {
         createdAt: 'asc',
       };
     }
-    if (
-      cur === 'id' ||
-      cur === 'title' ||
-      cur === 'photoUrl' ||
-      cur === 's3Key' ||
-      cur === 'slug' ||
-      cur === 'userId'
-    ) {
-      prismaFormatted['where'] = {
-        ...acc['where'],
-        [cur]: reqQuery[cur],
-      };
-    }
     if (!Object.keys(acc).length) {
       return prismaFormatted;
     }
     return { ...acc, ...prismaFormatted };
   }, {});
 
-  return filteredQuery;
+  const count = await prisma[model].count({ where: filter.where });
+  const data = await prisma[model].findMany(filter);
+  const page = +reqQuery['page'] >= 1 ? +reqQuery['page'] : 1;
+
+  const startIndex = (page - 1) * filter.take;
+  const endIndex = page * filter.take;
+  const pagination = {
+    page,
+    limit: filter.take,
+  };
+  if (endIndex < count) {
+    pagination.next = { page: page + 1, limit: filter.take };
+  }
+
+  if (startIndex > 0) {
+    pagination.previous = { page: page - 1, limit: filter.take };
+  }
+
+  return { count, pagination, data };
 };
 
-module.exports = filteredResults;
+module.exports = prismaQueries;
