@@ -124,9 +124,7 @@ exports.deleteBook = asyncHandler(async (req, res, next) => {
   if (!book) {
     res.status(400).json({ success: false });
   }
-  console.log(book.userId);
-  console.log(req.user.id);
-  console.log(req.user.role);
+
   if (book.userId !== req.user.id && req.user.role !== 'ADMIN') {
     return next(
       new ErrorResponse(
