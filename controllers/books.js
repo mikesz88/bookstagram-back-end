@@ -37,7 +37,6 @@ exports.createS3Url = asyncHandler(async (req, res, next) => {
 // @access PRIVATE
 exports.deleteS3Image = asyncHandler(async (req, res, next) => {
   const response = deleteObject(req.params.key);
-  console.log(response, 'response');
 
   if (!response) {
     return next(new ErrorResponse(`s3 Access Denied`, 500));
@@ -86,7 +85,6 @@ exports.updateBook = asyncHandler(async (req, res, next) => {
       id: req.params.id,
     },
   });
-  console.log('test');
 
   if (!book) {
     return next(new ErrorResponse('There is no book with that id', 400));
