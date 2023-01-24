@@ -121,12 +121,13 @@ exports.updateBook = asyncHandler(async (req, res, next) => {
 // @access PRIVATE
 exports.deleteBook = asyncHandler(async (req, res, next) => {
   const book = await prisma.book.findUnique({ where: { id: req.params.id } });
-
   if (!book) {
     res.status(400).json({ success: false });
   }
-
-  if (book.userId !== req.user.id && req.user.role !== 'admin') {
+  console.log(book.userId);
+  console.log(req.user.id);
+  console.log(req.user.role);
+  if (book.userId !== req.user.id && req.user.role !== 'ADMIN') {
     return next(
       new ErrorResponse(
         `User ${req.params.id} is not authorized to delete this book`,

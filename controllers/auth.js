@@ -109,7 +109,12 @@ exports.logout = asyncHandler(async (req, res, next) => {
 exports.getLoggedInUser = asyncHandler(async (req, res, next) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
+    include: {
+      forgotPassword: true,
+    },
   });
+
+  console.log(user);
 
   res.status(200).json({
     success: true,
