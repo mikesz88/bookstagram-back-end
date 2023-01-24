@@ -36,7 +36,7 @@ const prismaQueries = async (req, model) => {
       };
     } else {
       prismaFormatted['orderBy'] = {
-        createdAt: 'asc',
+        createdAt: 'desc',
       };
     }
     if (!Object.keys(acc).length) {

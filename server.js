@@ -14,7 +14,7 @@ const rateLimit = require('express-rate-limit');
 
 // cookie parser
 const cookieParser = require('cookie-parser');
-dotenv.config({ path: '.env' });
+dotenv.config();
 
 // Route files
 // const books = require('./routes-v1/books');
