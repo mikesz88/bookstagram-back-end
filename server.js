@@ -8,9 +8,6 @@ const hpp = require('hpp');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
-// Using environment files
-// const path = require('path');
-
 // cookie parser
 const cookieParser = require('cookie-parser');
 dotenv.config();
