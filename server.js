@@ -16,9 +16,6 @@ const cookieParser = require('cookie-parser');
 dotenv.config();
 
 // Route files
-// const books = require('./routes-v1/books');
-// const auth = require('./routes-v1/auth');
-// const users = require('./routes-v1/users');
 const books = require('./routes/books');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
